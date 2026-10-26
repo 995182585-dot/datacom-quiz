@@ -1,0 +1,32 @@
+{
+  "name": "华为数通刷题 · HCIA / HCIP Datacom",
+  "short_name": "数通刷题",
+  "description": "HCIA-Datacom 与 HCIP-Datacom 刷题练习，2009 道题，支持单选、多选、判断、填空四种题型，可离线使用。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7fa",
+  "theme_color": "#0a5c8a",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
