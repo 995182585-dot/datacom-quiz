@@ -435,10 +435,18 @@
     saveNow();
   }
 
+  // 全库索引：一次性建好 id -> 题目 的映射，避免每次线性遍历，
+// 也避免遗漏某个级别（此前漏了 HCIE，导致 HCIE 题目点不进去）
+  var QIDX = (function () {
+    var m = {};
+    ['hcia', 'hcip', 'ie'].forEach(function (lv) {
+      (DB[lv] || []).forEach(function (q) { m[q.id] = q; });
+    });
+    return m;
+  })();
+
   function questionOf(id) {
-    var all = DB.hcia.concat(DB.hcip);
-    for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
-    return null;
+    return QIDX[id] || null;
   }
 
   function sessionQuestions() {
@@ -1201,8 +1209,7 @@
     var all = bank();
 
     var card = el('div', 'card');
-    card.appendChild(el('h3', null, null));
-    card.querySelector('h3').textContent = p.name;
+    card.appendChild(el('h3', null, p.name));
     card.appendChild(el('div', 'small muted',
       '满分 1000 分，600 分及格。按真实考试比例从题库随机抽题。'));
     wrap.appendChild(card);
