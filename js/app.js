@@ -24,9 +24,11 @@
       window.BANK_HCIP_I || [], window.BANK_HCIP_J || [],
       window.BANK_HCIP_K || []
     );
+    var ie = [].concat(window.BANK_IE || []);
     return {
       hcia: normalize(hcia, 'hcia'),
-      hcip: normalize(hcip, 'hcip')
+      hcip: normalize(hcip, 'hcip'),
+      ie: normalize(ie, 'ie')
     };
   }
 
@@ -49,8 +51,11 @@
 
   var LEVELS = {
     hcia: { key: 'hcia', name: 'HCIA-Datacom', sub: 'H12-811 · 工程师级' },
-    hcip: { key: 'hcip', name: 'HCIP-Datacom', sub: 'H12-821 + H12-831 · 高级工程师级' }
+    hcip: { key: 'hcip', name: 'HCIP-Datacom', sub: 'H12-821 + H12-831 · 高级工程师级' },
+    ie: { key: 'ie', name: 'HCIE-Datacom', sub: 'HCIE 笔试 · 专家级' }
   };
+  // 级别显示顺序
+  var LEVEL_ORDER = ['hcia', 'hcip', 'ie'];
 
   var TYPE_NAME = { single: '单选题', multi: '多选题', judge: '判断题', fill: '填空题' };
 
@@ -256,7 +261,7 @@
 
     // 级别切换
     var tabs = el('div', 'level-tabs');
-    ['hcia', 'hcip'].forEach(function (k) {
+    LEVEL_ORDER.filter(function (k) { return DB[k] && DB[k].length; }).forEach(function (k) {
       var b = el('button', curLevel === k ? 'on' : null, LEVELS[k].name.replace('-Datacom', ''));
       b.onclick = function () {
         if (curLevel === k) return;
@@ -547,6 +552,19 @@
 
     card.appendChild(el('div', 'stem', q.stem));
 
+    // 配图（部分 HCIE 题附带拓扑图/配置截图，内联为 data URI）
+    if (q.image) {
+      var fig = el('div', 'q-image');
+      var img = document.createElement('img');
+      img.src = q.image;
+      img.alt = '题目配图';
+      img.loading = 'lazy';
+      // 点击放大查看
+      img.onclick = function () { showImage(q.image); };
+      fig.appendChild(img);
+      card.appendChild(fig);
+    }
+
     var revealed = rec && rec.revealed;
     var interactive = !revealed;
 
@@ -778,6 +796,21 @@
   function closeModal() {
     var x = byId('modalMask');
     if (x) x.remove();
+    // 关闭图片查看器
+    var v = document.querySelector('.img-viewer');
+    if (v) { v.remove(); document.body.style.overflow = ''; }
+  }
+
+  // 点击配图放大查看
+  function showImage(src) {
+    closeModal();
+    var mask = el('div', 'img-viewer');
+    var big = document.createElement('img');
+    big.src = src;
+    mask.appendChild(big);
+    mask.onclick = closeModal;
+    document.body.appendChild(mask);
+    document.body.style.overflow = 'hidden';
   }
 
   function toast(msg) {
@@ -1121,6 +1154,14 @@
       h.appendChild(el('span', 'tag chap-tag', q.chapter || ''));
       c.appendChild(h);
       c.appendChild(el('div', null, q.stem));
+      if (q.image) {
+        var fig = el('div', 'q-image');
+        var im = document.createElement('img');
+        im.src = q.image; im.alt = '题目配图'; im.loading = 'lazy';
+        im.onclick = function () { showImage(q.image); };
+        fig.appendChild(im);
+        c.appendChild(fig);
+      }
       var f = el('div', 'small muted');
       f.style.marginTop = '6px';
       f.textContent = '答案：' + answerText(q);
@@ -1150,7 +1191,8 @@
    * ============================================================ */
   var EXAM_PRESETS = {
     hcia: { count: 50, min: 60, name: 'HCIA-Datacom 模拟考试' },
-    hcip: { count: 60, min: 60, name: 'HCIP-Datacom 模拟考试' }
+    hcip: { count: 60, min: 60, name: 'HCIP-Datacom 模拟考试' },
+    ie: { count: 60, min: 90, name: 'HCIE-Datacom 模拟考试' }
   };
 
   function examSetupView() {
@@ -1370,7 +1412,7 @@
     // 全部级别汇总
     var sc = el('div', 'card');
     sc.appendChild(el('h3', null, '全部级别汇总'));
-    ['hcia', 'hcip'].forEach(function (lv) {
+    LEVEL_ORDER.filter(function (lv) { return DB[lv] && DB[lv].length; }).forEach(function (lv) {
       var arr = DB[lv];
       var n = 0, k = 0, w = 0;
       arr.forEach(function (q) {
